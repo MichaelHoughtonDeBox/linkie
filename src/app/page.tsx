@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function decodeUrls(hash: string): string[] {
   if (!hash || hash.length < 2) return [];
@@ -21,31 +21,45 @@ function encodeUrls(urls: string[]): string {
   return btoa(JSON.stringify(urls));
 }
 
+/**
+ * Opens multiple URLs by programmatically clicking hidden <a> tags.
+ * This is more reliable than window.open() which browsers aggressively block.
+ */
+function openAllUrls(urls: string[]) {
+  urls.forEach((url) => {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+}
+
 export default function Home() {
   const [urls, setUrls] = useState<string[]>([]);
-  const [opened, setOpened] = useState(false);
-  const [blocked, setBlocked] = useState(false);
   const [input, setInput] = useState("");
+  const hasUrls = urls.length > 0;
+  const autoOpenAttempted = useRef(false);
 
   useEffect(() => {
     const hash = window.location.hash;
     const decoded = decodeUrls(hash);
     if (decoded.length > 0) {
       setUrls(decoded);
-      // Auto-open all links
-      let wasBlocked = false;
-      decoded.forEach((url) => {
-        const w = window.open(url, "_blank");
-        if (!w) wasBlocked = true;
-      });
-      setOpened(true);
-      if (wasBlocked) setBlocked(true);
     }
   }, []);
 
-  const openAll = () => {
-    urls.forEach((url) => window.open(url, "_blank"));
-  };
+  // Auto-open is unlikely to work without a user gesture, so we always show
+  // the Open All button. But we try once anyway.
+  useEffect(() => {
+    if (urls.length > 0 && !autoOpenAttempted.current) {
+      autoOpenAttempted.current = true;
+      openAllUrls(urls);
+    }
+  }, [urls]);
 
   const handleCreate = () => {
     const parsed = input
@@ -60,7 +74,7 @@ export default function Home() {
   };
 
   // Landing page with URLs to open
-  if (urls.length > 0) {
+  if (hasUrls) {
     return (
       <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
         <main className="flex flex-1 w-full max-w-2xl flex-col items-center justify-center py-16 px-6">
@@ -68,21 +82,15 @@ export default function Home() {
             Linkie
           </h1>
           <p className="text-zinc-500 dark:text-zinc-400 mb-8">
-            {opened && !blocked
-              ? `Opened ${urls.length} link${urls.length === 1 ? "" : "s"} in new tabs.`
-              : blocked
-                ? "Your browser blocked the popups. Click below to open them."
-                : `Opening ${urls.length} link${urls.length === 1 ? "" : "s"}...`}
+            {urls.length} link{urls.length === 1 ? "" : "s"} ready to open.
           </p>
 
-          {blocked && (
-            <button
-              onClick={openAll}
-              className="mb-8 rounded-full bg-black text-white dark:bg-white dark:text-black px-8 py-3 text-base font-medium hover:opacity-80 transition-opacity"
-            >
-              Open All ({urls.length})
-            </button>
-          )}
+          <button
+            onClick={() => openAllUrls(urls)}
+            className="mb-8 rounded-full bg-black text-white dark:bg-white dark:text-black px-8 py-3 text-lg font-medium hover:opacity-80 transition-opacity"
+          >
+            Open All ({urls.length})
+          </button>
 
           <ul className="w-full space-y-2">
             {urls.map((url, i) => (
