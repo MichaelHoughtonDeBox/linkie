@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { SiteHeader } from "@/components/site/site-header";
+
 type OpenSummary = {
   opened: number;
   blocked: number;
@@ -50,20 +52,18 @@ export function LinkyLauncher({
   }, [createdAt]);
 
   return (
-    <div className="terminal-stage flex flex-1 items-center justify-center px-6 py-14">
-      <main className="terminal-shell w-full max-w-4xl p-7 sm:p-10">
-        <header className="mb-7">
-          <p className="terminal-label mb-3">LAUNCH DECK</p>
+    <div className="terminal-stage flex flex-1 items-start justify-center px-5 py-5 sm:py-6">
+      <main className="site-shell w-full max-w-5xl p-5 sm:p-6 lg:p-7">
+        <SiteHeader currentPath="/l" />
+
+        <header className="site-hero">
+          <p className="terminal-label mb-3">Launch deck</p>
           <h1 className="display-title mb-2 text-4xl font-semibold text-foreground sm:text-5xl">
-            {/* Keep the launcher headline aligned with the slash-led brand mark. */}
-            <span aria-hidden="true" className="mr-2 inline-block">
-              /
-            </span>
-            Linky
+            Open this Linky in one click
           </h1>
-          <p className="terminal-muted text-sm sm:text-base">
-            Open the full bundle in one action, then fall back to individual links
-            if your browser blocks popups.
+          <p className="terminal-muted text-sm leading-relaxed sm:text-base">
+            Trigger the full bundle instantly, then use manual links if popup
+            settings block part of the launch.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="terminal-chip">{urls.length} links</span>
@@ -72,20 +72,21 @@ export function LinkyLauncher({
           </div>
         </header>
 
-        <div className="terminal-card mb-5 p-4">
+        <section className="terminal-card mb-5 p-4">
           <button
             onClick={() => setOpenSummary(openAllUrls(urls))}
             className="terminal-action w-full px-6 py-3 text-sm sm:text-base"
+            type="button"
           >
             {OPEN_LINK_KEY} ({urls.length})
           </button>
           <p className="terminal-muted mt-3 text-xs sm:text-sm">
             Browsers require a user click before opening multiple tabs.
           </p>
-        </div>
+        </section>
 
         {openSummary ? (
-          <p className="terminal-card mb-5 px-4 py-3 text-sm text-foreground">
+          <p className="site-inline-callout mb-5 text-sm text-foreground">
             Opened {openSummary.opened} of {urls.length} link
             {urls.length === 1 ? "" : "s"}.
             {openSummary.blocked > 0
@@ -94,8 +95,8 @@ export function LinkyLauncher({
           </p>
         ) : null}
 
-        <section className="terminal-card mb-5 p-4 sm:p-5">
-          <p className="terminal-label mb-2">ENABLE POPUPS (ONE TIME)</p>
+        <section className="site-inline-callout mb-5">
+          <p className="terminal-label mb-2">Enable popups (one time)</p>
           <ol className="terminal-muted list-decimal space-y-1 pl-5 text-xs leading-relaxed sm:text-sm">
             <li>
               Open Linky at <code>{baseUrl}</code>.
@@ -117,25 +118,33 @@ export function LinkyLauncher({
           </ol>
         </section>
 
-        <ul className="space-y-2">
-          {urls.map((url, index) => (
-            <li key={url} className="terminal-link-list-item">
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-foreground"
-              >
-                <span className="terminal-chip shrink-0">{index + 1}</span>
-                <span className="truncate">{url}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
+        <section className="site-section">
+          <p className="terminal-label mb-3">Manual links</p>
+          <ul className="site-divider-list">
+            {urls.map((url, index) => (
+              <li key={url} className="site-divider-item">
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-sm text-foreground"
+                >
+                  <span className="terminal-chip shrink-0">{index + 1}</span>
+                  <span className="truncate">{url}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-        <Link href="/" className="terminal-secondary mt-6 inline-block px-4 py-2 text-sm">
-          Create another Linky
-        </Link>
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Link href="/" className="terminal-secondary inline-block px-4 py-2 text-sm">
+            Create another Linky
+          </Link>
+          <Link href="/docs" className="terminal-secondary inline-block px-4 py-2 text-sm">
+            Docs
+          </Link>
+        </div>
       </main>
     </div>
   );
