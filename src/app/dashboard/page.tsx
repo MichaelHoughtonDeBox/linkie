@@ -115,11 +115,13 @@ export default async function DashboardPage() {
   return (
     <section className="dashboard-linky-list">
       <header className="mb-5">
-        <p className="terminal-label mb-1">
-          {subject.type === "org"
-            ? "Organization launch bundles"
-            : "Your launch bundles"}
-        </p>
+        {/*
+          Workspace identity now lives in the layout-level chip. This header
+          focuses on the page's job: listing launch bundles. We still flex
+          the copy by subject so "team" vs "personal" feels natural, but we
+          no longer duplicate the workspace name here.
+        */}
+        <p className="terminal-label mb-1">Launch bundles</p>
         <h1 className="display-title text-3xl font-semibold text-foreground sm:text-4xl">
           {subject.type === "org"
             ? "Team-owned launch bundles"
@@ -127,8 +129,9 @@ export default async function DashboardPage() {
         </h1>
         <p className="terminal-muted mt-2 max-w-2xl text-sm sm:text-base">
           Manage, edit, and share the launch bundles attributed to{" "}
-          {subject.type === "org" ? "this organization" : "your account"}. Use the
-          workspace switcher above to view organization-owned bundles.
+          {subject.type === "org" ? "this organization" : "your account"}.
+          Switch workspace above to see bundles owned by a different account
+          or team.
         </p>
       </header>
 

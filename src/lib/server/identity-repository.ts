@@ -164,3 +164,38 @@ export async function getOrganizationStripeCustomerId(
   );
   return result.rows[0]?.stripe_customer_id ?? null;
 }
+
+// ---------------------------------------------------------------------------
+// Name lookups for UI labels. Cheap single-row queries; the dashboard calls
+// these to render the active workspace name so the user always knows which
+// Clerk context they're viewing.
+// ---------------------------------------------------------------------------
+
+export async function getOrganizationNameByClerkId(
+  clerkOrgId: string,
+): Promise<string | null> {
+  const pool = getPgPool();
+  const result = await pool.query<{ name: string }>(
+    `SELECT name FROM organizations WHERE clerk_org_id = $1 LIMIT 1`,
+    [clerkOrgId],
+  );
+  return result.rows[0]?.name ?? null;
+}
+
+export async function getUserDisplayNameByClerkId(
+  clerkUserId: string,
+): Promise<{ displayName: string | null; email: string | null } | null> {
+  const pool = getPgPool();
+  const result = await pool.query<{
+    display_name: string | null;
+    email: string | null;
+  }>(
+    `SELECT display_name, email FROM users WHERE clerk_user_id = $1 LIMIT 1`,
+    [clerkUserId],
+  );
+  if (result.rowCount === 0) return null;
+  return {
+    displayName: result.rows[0].display_name,
+    email: result.rows[0].email,
+  };
+}
