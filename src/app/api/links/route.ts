@@ -8,7 +8,10 @@ import type {
   CreateLinkyResponse,
   LinkyRecord,
 } from "@/lib/linky/types";
+import { getAuthSubject, type AuthSubject } from "@/lib/server/auth";
 import { getPublicBaseUrl, getRateLimitConfig } from "@/lib/server/config";
+import { getLimits } from "@/lib/server/entitlements";
+import { computeCreatorFingerprint } from "@/lib/server/fingerprint";
 import { insertLinkyRecord } from "@/lib/server/linkies-repository";
 import { checkRateLimit } from "@/lib/server/rate-limit";
 import { getClientIp } from "@/lib/server/request";
@@ -28,7 +31,6 @@ function toErrorResponse(error: LinkyError): Response {
     {
       error: publicMessage,
       code: error.code,
-      // Internal details are useful in dev but should not leak in normal responses.
       details: process.env.NODE_ENV === "development" ? error.details : undefined,
     },
     { status: error.statusCode },
@@ -48,14 +50,64 @@ function buildCreateResponse(
   };
 }
 
-async function createLinkyRecord(payload: CreateLinkyPayload): Promise<LinkyRecord> {
-  // We retry generated slugs in case of rare random collisions.
+// ---------------------------------------------------------------------------
+// Ownership + fingerprint attribution.
+//
+// - Org context wins over user context (team plan > solo).
+// - Anonymous creates stay anonymous, but we still capture a fingerprint
+//   so the creator can later claim the Linky through the claim-token flow.
+// ---------------------------------------------------------------------------
+
+type AttributionFields = {
+  ownerUserId: string | null;
+  ownerOrgId: string | null;
+  creatorFingerprint: string | null;
+};
+
+function resolveAttribution(
+  subject: AuthSubject,
+  ipAddress: string,
+  userAgent: string | null,
+): AttributionFields {
+  if (subject.type === "org") {
+    return {
+      ownerUserId: null,
+      ownerOrgId: subject.orgId,
+      creatorFingerprint: null,
+    };
+  }
+
+  if (subject.type === "user") {
+    return {
+      ownerUserId: subject.userId,
+      ownerOrgId: null,
+      creatorFingerprint: null,
+    };
+  }
+
+  return {
+    ownerUserId: null,
+    ownerOrgId: null,
+    creatorFingerprint: computeCreatorFingerprint(ipAddress, userAgent),
+  };
+}
+
+async function createLinkyRecord(
+  payload: CreateLinkyPayload,
+  attribution: AttributionFields,
+): Promise<LinkyRecord> {
   for (let attempt = 0; attempt < GENERATED_SLUG_ATTEMPTS; attempt += 1) {
     const created = await insertLinkyRecord({
       slug: generateSlug(),
       urls: payload.urls,
+      urlMetadata: payload.urlMetadata ?? [],
       source: payload.source,
       metadata: payload.metadata,
+      title: payload.title ?? null,
+      description: payload.description ?? null,
+      ownerUserId: attribution.ownerUserId,
+      ownerOrgId: attribution.ownerOrgId,
+      creatorFingerprint: attribution.creatorFingerprint,
     });
 
     if (created) {
@@ -72,8 +124,8 @@ async function createLinkyRecord(payload: CreateLinkyPayload): Promise<LinkyReco
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const rateConfig = getRateLimitConfig();
-    const rateLimitKey = getClientIp(request);
-    const rateLimit = checkRateLimit(rateLimitKey, rateConfig);
+    const clientIp = getClientIp(request);
+    const rateLimit = checkRateLimit(clientIp, rateConfig);
 
     if (!rateLimit.allowed) {
       return Response.json(
@@ -101,7 +153,24 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const payload = parseCreateLinkyPayload(rawPayload);
-    const record = await createLinkyRecord(payload);
+
+    const subject = await getAuthSubject();
+    const limits = getLimits(subject);
+
+    if (payload.urls.length > limits.maxUrlsPerLinky) {
+      throw new LinkyError(
+        `Your plan allows up to ${limits.maxUrlsPerLinky} URLs per Linky.`,
+        { code: "BAD_REQUEST", statusCode: 400 },
+      );
+    }
+
+    const attribution = resolveAttribution(
+      subject,
+      clientIp,
+      request.headers.get("user-agent"),
+    );
+
+    const record = await createLinkyRecord(payload, attribution);
     const response = buildCreateResponse(record, request);
 
     return Response.json(response, { status: 201 });
