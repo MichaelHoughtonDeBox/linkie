@@ -3,6 +3,13 @@
 // middleware (request, event) => Response | void. Clerk's `clerkMiddleware()`
 // returns exactly that shape, so we can use it here directly.
 //
+// LOCATION: this file MUST sit next to `app/` — in this project that means
+// `src/proxy.ts`, NOT the repo root. Next.js only picks up the proxy when
+// it's co-located with the app dir. Clerk surfaces a very specific error
+// when you get this wrong ("clerkMiddleware() was not run, your middleware
+// or proxy file might be misplaced"), so if you ever see that, check here
+// first.
+//
 // See: node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md
 //
 // NOTE: Proxy defaults to the Node.js runtime in Next.js 16. Do NOT set a
