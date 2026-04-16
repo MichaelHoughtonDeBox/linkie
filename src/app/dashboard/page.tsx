@@ -36,7 +36,7 @@ function LinkyRow({
     <article className="dashboard-linky-row site-divider-item flex flex-wrap items-center justify-between gap-3">
       <div className="min-w-0 flex-1">
         <Link
-          href={`/dashboard/linkies/${linky.slug}`}
+          href={`/dashboard/links/${linky.slug}`}
           className="dashboard-linky-title block truncate text-sm font-semibold text-foreground hover:underline sm:text-base"
         >
           {linky.title || `/l/${linky.slug}`}
@@ -64,7 +64,7 @@ function LinkyRow({
           Open
         </a>
         <Link
-          href={`/dashboard/linkies/${linky.slug}`}
+          href={`/dashboard/links/${linky.slug}`}
           className="terminal-secondary px-3 py-1.5 text-xs sm:text-sm"
         >
           Edit
@@ -77,11 +77,11 @@ function LinkyRow({
 function EmptyState({ subjectKind }: { subjectKind: "user" | "org" }) {
   return (
     <section className="dashboard-empty site-inline-callout">
-      <p className="terminal-label mb-2">No Linkies here yet</p>
+      <p className="terminal-label mb-2">No launch bundles here yet</p>
       <p className="terminal-muted mb-3 max-w-xl text-sm sm:text-base">
         {subjectKind === "org"
-          ? "This organization has no saved Linkies yet. Create one from the homepage; any Linky you create while this org is active will be owned by the team."
-          : "You have no saved Linkies yet. Create one from the homepage — it will be attributed to your account so you can edit it here."}
+          ? "This organization has no saved launch bundles yet. Create one from the homepage; any Linky you create while this org is active will be owned by the team."
+          : "You have no saved launch bundles yet. Create one from the homepage — it will be attributed to your account so you can edit it here."}
       </p>
       <Link href="/" className="terminal-action px-4 py-2 text-sm">
         Create a Linky
@@ -116,7 +116,9 @@ export default async function DashboardPage() {
     <section className="dashboard-linky-list">
       <header className="mb-5">
         <p className="terminal-label mb-1">
-          {subject.type === "org" ? "Organization Linkies" : "Your Linkies"}
+          {subject.type === "org"
+            ? "Organization launch bundles"
+            : "Your launch bundles"}
         </p>
         <h1 className="display-title text-3xl font-semibold text-foreground sm:text-4xl">
           {subject.type === "org"
@@ -124,9 +126,9 @@ export default async function DashboardPage() {
             : "Your launch bundles"}
         </h1>
         <p className="terminal-muted mt-2 max-w-2xl text-sm sm:text-base">
-          Manage, edit, and share the Linkies attributed to{" "}
+          Manage, edit, and share the launch bundles attributed to{" "}
           {subject.type === "org" ? "this organization" : "your account"}. Use the
-          workspace switcher above to view organization-owned Linkies.
+          workspace switcher above to view organization-owned bundles.
         </p>
       </header>
 
@@ -142,7 +144,7 @@ export default async function DashboardPage() {
 
       {linkies.length >= INITIAL_PAGE_SIZE ? (
         <p className="terminal-muted mt-6 text-xs">
-          Showing the {INITIAL_PAGE_SIZE} most recently updated Linkies.
+          Showing the {INITIAL_PAGE_SIZE} most recently updated bundles.
           Pagination arrives in a future sprint.
         </p>
       ) : null}

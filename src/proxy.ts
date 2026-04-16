@@ -24,7 +24,7 @@ const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
   // Owner-only Linky management surface.
   "/api/me/(.*)",
-  "/api/linkies/(.*)/versions",
+  "/api/links/(.*)/versions",
 ]);
 
 // Methods that mutate an owned Linky. POST remains public (anonymous create).

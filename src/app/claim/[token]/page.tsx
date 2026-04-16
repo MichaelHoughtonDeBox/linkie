@@ -233,7 +233,7 @@ export default async function ClaimTokenPage({ params }: PageProps) {
   if (result.status === "ok") {
     // Happy path: drop the user straight into the editor for the claimed
     // Linky. They now own it and can edit + rename + share.
-    redirect(`/dashboard/linkies/${result.slug}`);
+    redirect(`/dashboard/links/${result.slug}`);
   }
 
   // Edge states — surface explicit messaging rather than a silent redirect.

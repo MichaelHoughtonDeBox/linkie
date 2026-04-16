@@ -16,8 +16,8 @@ export default function SignInPage() {
             Welcome back
           </h1>
           <p className="terminal-muted max-w-2xl text-sm leading-relaxed sm:text-base">
-            Sign in to manage your Linkies, edit their URLs and metadata, and
-            collaborate on team Linkies.
+            Sign in to manage your launch bundles, edit their URLs and
+            metadata, and collaborate on team bundles.
           </p>
 
           <div className="mt-6 flex justify-center sm:justify-start">

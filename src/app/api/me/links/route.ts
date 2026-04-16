@@ -81,11 +81,11 @@ function parsePaginationParams(request: NextRequest): {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/me/linkies
+// GET /api/me/links
 //
-// Lists the Linkies owned by the active subject:
-//   - org context → org-owned Linkies
-//   - user context → user-owned Linkies
+// Lists the Linky launch bundles owned by the active subject:
+//   - org context → org-owned bundles
+//   - user context → user-owned bundles
 //
 // Paginated with `limit` (default 20, max 100) and `offset`.
 // ---------------------------------------------------------------------------
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest): Promise<Response> {
       return toErrorResponse(error);
     }
     return toErrorResponse(
-      new LinkyError("Unexpected server error while listing Linkies.", {
+      new LinkyError("Unexpected server error while listing your Linky bundles.", {
         code: "INTERNAL_ERROR",
         statusCode: 500,
       }),

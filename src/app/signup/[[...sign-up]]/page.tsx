@@ -19,8 +19,9 @@ export default function SignUpPage() {
             Create a Linky account
           </h1>
           <p className="terminal-muted max-w-2xl text-sm leading-relaxed sm:text-base">
-            Accounts let you save, edit, and share your Linkies across devices,
-            claim Linkies an agent created for you, and collaborate in teams.
+            Accounts let you save, edit, and share your launch bundles across
+            devices, claim bundles an agent created for you, and collaborate
+            in teams.
           </p>
 
           <div className="mt-6 flex justify-center sm:justify-start">

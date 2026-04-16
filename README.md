@@ -20,8 +20,8 @@ The short URL resolves to `/l/[slug]`, where users click **Open All** to launch 
 ## Features
 
 - **Anonymous creation** — public API + CLI + skill + web with basic IP rate limiting. No account required to ship a Linky.
-- **Accounts (Clerk)** — users, organizations, team-owned Linkies, SSO-ready.
-- **Editable Linkies** — rename, re-order URLs, add per-URL notes/tags/open policies, soft-delete. Every edit is captured as an append-only version.
+- **Accounts (Clerk)** — users, organizations, team-owned launch bundles, SSO-ready.
+- **Editable bundles** — rename, re-order URLs, add per-URL notes/tags/open policies, soft-delete. Every edit is captured as an append-only version.
 - **Claim flow** — agents can create a Linky on your behalf and return a claim URL; clicking it binds ownership to your Clerk account in one click.
 - **Billing scaffold (Stripe direct)** — Stripe Customers minted per user and per organization, webhook pipeline ready for plans.
 - **Launcher page** with popup-blocking guidance and manual fallback links.
@@ -34,7 +34,7 @@ The short URL resolves to `/l/[slug]`, where users click **Open All** to launch 
 Skill / WebUI / CLI / SDK / curl / agent handoff
         |
         v
-POST /api/links  ---> Neon Postgres (linkies + users + orgs + versions + claim_tokens)
+POST /api/links  ---> Neon Postgres (`linkies`, `users`, `organizations`, `linky_versions`, `claim_tokens`)
         |
         v
    /l/[slug] public launcher
@@ -179,12 +179,12 @@ is never lost. Request body (all fields optional, at least one required):
 Soft-deletes the Linky. The public `/l/:slug` resolver returns 404
 afterwards.
 
-### `GET /api/me/linkies` (signed-in)
+### `GET /api/me/links` (signed-in)
 
-Paginated list of the active subject's Linkies. Query params: `limit`
+Paginated list of the active subject's launch bundles. Query params: `limit`
 (default 20, max 100), `offset`.
 
-### `GET /api/linkies/:slug/versions` (owner-only)
+### `GET /api/links/:slug/versions` (owner-only)
 
 Append-only edit history for an owned Linky.
 
@@ -285,12 +285,12 @@ behalf, then sends you a claim URL. One click and the Linky is yours.
    - **Signed-out**: landing page with Sign-in / Sign-up CTAs that
      round-trip back to the claim URL via `redirect_url`.
    - **Signed-in**: token is consumed atomically and the user is
-     redirected to `/dashboard/linkies/<slug>` as the new owner.
+     redirected to `/dashboard/links/<slug>` as the new owner.
 4. Org context takes precedence — if the user has an active Clerk org
    when claiming, ownership is attributed to the org.
 
 Expired / already-consumed / orphaned tokens render dedicated messaging
-so failures are explainable. Claiming is a no-op on Linkies that already
+so failures are explainable. Claiming is a no-op on bundles that already
 have an owner (prevents a race from transferring a claimed Linky a
 second time).
 
@@ -311,7 +311,7 @@ second time).
 
 ## Roadmap
 
-- [x] **Accounts + editable Linkies + per-URL metadata** — Sprint 1.
+- [x] **Accounts + editable launch bundles + per-URL metadata** — Sprint 1.
 - [ ] **Analytics + access control** — team plan foundation.
 - [ ] **First-class MCP server + "linky session" convention** — other frameworks can adopt; publish the spec.
 - [ ] **Cursor / Claude / ChatGPT-native skills** — emit a Linky at the end of every task.

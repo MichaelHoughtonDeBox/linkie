@@ -309,8 +309,8 @@ export function LiveLinkyDemo() {
                   <p className="terminal-label mb-2">Keep this Linky for later</p>
                   <p className="terminal-muted mb-2 text-xs sm:text-sm">
                     Sign in or create an account to claim ownership. You&apos;ll
-                    be able to edit the URL bundle, rename it, and share it
-                    from your dashboard.
+                    be able to edit this launch bundle, rename it, and share
+                    it from your dashboard.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Link
@@ -336,7 +336,7 @@ export function LiveLinkyDemo() {
                     or delete.
                   </p>
                   <Link
-                    href={`/dashboard/linkies/${createdLinky.slug}`}
+                    href={`/dashboard/links/${createdLinky.slug}`}
                     className="terminal-secondary px-4 py-2 text-sm"
                   >
                     Open in dashboard →

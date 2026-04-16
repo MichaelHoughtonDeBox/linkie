@@ -56,7 +56,7 @@ function toVersionDto(version: LinkyVersionRecord) {
 }
 
 // ---------------------------------------------------------------------------
-// GET /api/linkies/:slug/versions
+// GET /api/links/:slug/versions
 //
 // Append-only edit history. Viewable only by users who can edit the Linky
 // (owner, or org member for org-owned Linkies). Anonymous Linkies have no
