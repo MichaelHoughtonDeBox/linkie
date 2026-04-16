@@ -25,7 +25,7 @@ function getMetadataBase(): URL {
 
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
-  title: "Linky - One short link for many tabs",
+  title: "Linky - One Linky to open them all",
   description:
     "Create one short Linky URL that opens all your saved links from a single landing page.",
   icons: {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon", type: "image/png" }],
   },
   openGraph: {
-    title: "Linky - One short link for many tabs",
+    title: "Linky - One Linky to open them all",
     description:
       "Create one short Linky URL that opens all your saved links from a single landing page.",
     url: "https://getalinky.com",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Linky - One short link for many tabs",
+    title: "Linky - One Linky to open them all",
     description:
       "Create one short Linky URL that opens all your saved links from a single landing page.",
     images: ["/twitter-image"],

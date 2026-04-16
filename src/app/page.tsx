@@ -43,7 +43,7 @@ export default function Home() {
         <section className="site-hero">
           <p className="terminal-label mb-3">Agent-first launch orchestration</p>
           <h1 className="display-title mb-3 text-5xl leading-[0.9] font-semibold text-foreground sm:text-6xl">
-            One Linky to rule them all.
+            One Linky to open them all.
           </h1>
           <p className="terminal-muted max-w-3xl text-sm leading-relaxed sm:text-base">
             Give Linky a list of URLs and get back one short launcher link.
