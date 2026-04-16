@@ -1,0 +1,5 @@
+<svg width="220" height="72" viewBox="0 0 220 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M19 36L30 25L34 27V45L30 47L19 36Z" stroke="#FFFFFF" stroke-width="2"/>
+  <path d="M34 28L44 23V49L34 44" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="56" y="42" fill="#FFFFFF" font-family="IBM Plex Mono, Menlo, Monaco, monospace" font-size="16" font-weight="600" letter-spacing="1.2">VS CODE</text>
+</svg>
