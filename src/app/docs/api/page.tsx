@@ -181,20 +181,13 @@ export default function DocsApiPage() {
       </section>
 
       <section className="docs-section">
-        <p className="terminal-label">Webhooks (service-to-service)</p>
-        <ul>
-          <li>
-            <code>POST /api/webhooks/clerk</code> — signature-verified
-            (svix). Upserts users, orgs, and memberships into Neon.
-          </li>
-          <li>
-            <code>POST /api/webhooks/stripe</code> — signature-verified.
-            Wired up for billing; events are accepted and logged today.
-          </li>
-        </ul>
+        <p className="terminal-label">Webhooks</p>
         <p>
-          Both reject unsigned requests with <code>401</code>. Never call
-          these from client code — they&apos;re owned by Clerk and Stripe.
+          <code>POST /api/webhooks/clerk</code> and{" "}
+          <code>POST /api/webhooks/stripe</code> are signature-verified
+          service endpoints called by Clerk and Stripe respectively. They
+          reject unsigned requests with <code>401</code>. Do not call them
+          from your own code — you&apos;ll never need to.
         </p>
       </section>
 

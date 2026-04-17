@@ -103,9 +103,7 @@ export default function DocsLimitsPage() {
       <section className="docs-section">
         <p className="terminal-label">Plan defaults</p>
         <p>
-          These are the defaults when no paid plan is attached to your
-          account. Paid plans override them once Stripe billing is attached;
-          until then every account uses the values below.
+          Every account currently uses these defaults.
         </p>
         <div className="docs-table-wrap">
           <table className="docs-table">

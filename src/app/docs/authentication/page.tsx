@@ -85,11 +85,6 @@ export default function DocsAuthenticationPage() {
             </tbody>
           </table>
         </div>
-        <p>
-          If Clerk ever renames a provider key (for example{" "}
-          <code>oauth_github</code>), Linky catches the change before it ships
-          so your rules keep matching against the right field.
-        </p>
       </section>
 
       <section className="docs-section">
