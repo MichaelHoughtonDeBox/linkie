@@ -151,6 +151,16 @@ body::before {
   max-width: 46rem;
 }
 
+/*
+ * Large tagline-style lead that sits directly under the H1.
+ * Tighter tracking than the default mono body — the line needs to
+ * read as a single, scannable product-definition statement, not
+ * as a wall of monospace characters.
+ */
+.site-hero-lead {
+  letter-spacing: -0.01em;
+}
+
 .site-section {
   margin-top: clamp(3.25rem, 8vw, 6rem);
 }

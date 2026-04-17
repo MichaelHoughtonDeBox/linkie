@@ -88,14 +88,23 @@ export default async function Home() {
           </h1>
 
           {/*
-            New plain-English lead. Replaces the old "launch orchestration"
-            paragraph. Goal: a brand-new visitor understands what Linky does
-            within the first 15 seconds — concrete verb, concrete artifact.
+            Two-line lead, deliberately split:
+              - Line 1 (large, un-muted) is the tagline-style product
+                definition. Names the brand, names the verb, states the
+                outcome, stops. A first-time reader parses it in one
+                breath — this is the 15-second comprehension test.
+              - Line 2 (smaller, muted) carries the context that used to
+                be crammed into the same sentence: what you do with the
+                short link, who it's for.
+            Splitting avoids the Sweep-1 "sentence trying to say too much"
+            problem the earlier draft had.
           */}
-          <p className="terminal-muted max-w-3xl text-base leading-relaxed sm:text-lg">
-            Bundle many URLs into one short launch link. Share it so agents
-            and humans can hand off full context at scale — one click, every
-            tab opens.
+          <p className="site-hero-lead max-w-3xl text-xl leading-snug font-medium text-foreground sm:text-2xl">
+            Linky lets you bundle many URLs into one.
+          </p>
+          <p className="terminal-muted mt-3 max-w-3xl text-base leading-relaxed sm:text-lg">
+            Share the short link — one click opens every tab, for humans or
+            agents alike.
           </p>
 
           {/*

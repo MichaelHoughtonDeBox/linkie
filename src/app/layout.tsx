@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
   title: "Linky - One Linky to open them all",
   description:
-    "Create one short Linky URL that opens all your saved links from a single landing page.",
+    "Linky lets you bundle many URLs into one. Share the short link — one click opens every tab, for humans or agents alike. Open source, agent-first, free to start.",
   icons: {
     icon: [{ url: "/icon", type: "image/png" }],
     shortcut: [{ url: "/icon", type: "image/png" }],
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Linky - One Linky to open them all",
     description:
-      "Create one short Linky URL that opens all your saved links from a single landing page.",
+      "Linky lets you bundle many URLs into one. Share the short link — one click opens every tab, for humans or agents alike. Open source, agent-first, free to start.",
     url: "https://getalinky.com",
     siteName: "Linky",
     type: "website",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Linky - One Linky to open them all",
     description:
-      "Create one short Linky URL that opens all your saved links from a single landing page.",
+      "Linky lets you bundle many URLs into one. Share the short link — one click opens every tab, for humans or agents alike. Open source, agent-first, free to start.",
     images: ["/twitter-image"],
   },
 };
