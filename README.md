@@ -351,6 +351,21 @@ several of these are different by design.
   HTML, JS, or files. No password walls on the bundle itself, no proxy
   routes, no service variables. Access control for *who sees which URLs*
   will be handled via identity-aware resolution (Sprint 2), not via gates.
+- **Linky is a low-surveillance primitive by default.** Bundles launch
+  clean — no tracker-hop redirects, no fingerprint cookies on anonymous
+  viewers, no "did you read this?" pings on destination tabs. We also
+  cannot tell whether a tab you opened from a Linky is still open: once
+  the browser navigates to a third-party origin, the Same-Origin Policy
+  severs any observability by design, and that is the right default.
+  Analytics that we do add will answer **owner** questions — *"did my
+  intended audience arrive and see the right personalized bundle?"* —
+  not **viewer** questions — *"what is Alice doing right now?"*
+  Concretely that means launcher view events (with Sprint 2 policy
+  match-context), "Open All" click counts, and return-visitor signal
+  will ship; per-URL wrapper redirects will be strictly opt-in per
+  Linky, never on by default; full cross-tab observability (the only
+  way to answer *"is it still open?"*) stays gated behind an opt-in
+  browser extension on the roadmap, never a silent tracker.
 
 ## Roadmap
 
