@@ -7,6 +7,7 @@ import {
   ForbiddenError,
   requireAuthSubject,
   requireCanViewLinky,
+  requireScope,
   roleOfSubject,
 } from "@/lib/server/auth";
 import {
@@ -74,6 +75,9 @@ export async function GET(
   try {
     const { slug } = await context.params;
     const subject = await requireAuthSubject(request);
+    // Sprint 2.7 Chunk D: version history is a read surface; bearer
+    // callers only need `links:read`.
+    requireScope(subject, "links:read");
 
     const existing = await getLinkyRecordBySlug(slug);
     if (!existing) {

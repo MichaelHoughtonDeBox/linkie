@@ -4,7 +4,9 @@ import { LinkyError, isLinkyError } from "@/lib/linky/errors";
 import type { LinkyRecord } from "@/lib/linky/types";
 import {
   AuthRequiredError,
+  ForbiddenError,
   requireAuthSubject,
+  requireScope,
 } from "@/lib/server/auth";
 import { listLinkiesForSubject } from "@/lib/server/linkies-repository";
 
@@ -14,10 +16,14 @@ export const runtime = "nodejs";
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
-type KnownError = LinkyError | AuthRequiredError;
+type KnownError = LinkyError | AuthRequiredError | ForbiddenError;
 
 function isKnownError(error: unknown): error is KnownError {
-  return isLinkyError(error) || error instanceof AuthRequiredError;
+  return (
+    isLinkyError(error) ||
+    error instanceof AuthRequiredError ||
+    error instanceof ForbiddenError
+  );
 }
 
 function toErrorResponse(error: KnownError): Response {
@@ -93,6 +99,8 @@ function parsePaginationParams(request: NextRequest): {
 export async function GET(request: NextRequest): Promise<Response> {
   try {
     const subject = await requireAuthSubject(request);
+    // Sprint 2.7 Chunk D: listing is read-only; `links:read` is enough.
+    requireScope(subject, "links:read");
     const { limit, offset } = parsePaginationParams(request);
 
     const records =
