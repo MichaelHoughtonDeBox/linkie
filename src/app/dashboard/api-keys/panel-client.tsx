@@ -2,10 +2,13 @@
 
 import { useMemo, useState, useTransition } from "react";
 
+type ApiKeyPermission = "links:read" | "links:write" | "keys:admin";
+
 type ApiKeyItem = {
   id: number;
   name: string;
   scope: "user" | "org";
+  scopes: ApiKeyPermission[];
   keyPrefix: string;
   createdAt: string;
   createdAtLabel: string;
@@ -20,19 +23,58 @@ type Props = {
   initialKeys: ApiKeyItem[];
 };
 
+type ApiKeyDto = {
+  id: number;
+  name: string;
+  scope: "user" | "org";
+  scopes: ApiKeyPermission[];
+  keyPrefix: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+};
+
 type CreateApiKeyResponse = {
-  apiKey: {
-    id: number;
-    name: string;
-    scope: "user" | "org";
-    keyPrefix: string;
-    createdAt: string;
-    lastUsedAt: string | null;
-    revokedAt: string | null;
-  };
+  apiKey: ApiKeyDto;
   rawKey: string;
   warning?: string;
 };
+
+// Three preset scope sets. The underlying array supports combinations
+// (e.g. ['links:read', 'keys:admin']) but the UI exposes the three
+// common ones — anything fancier goes through the API directly.
+type ScopePreset = "read" | "write" | "admin";
+
+const SCOPE_PRESETS: Record<
+  ScopePreset,
+  { label: string; description: string; scopes: ApiKeyPermission[] }
+> = {
+  read: {
+    label: "Read-only",
+    description:
+      "List and view Linkies. Read insights. Cannot edit or delete. Safe for LLM context.",
+    scopes: ["links:read"],
+  },
+  write: {
+    label: "Read & write",
+    description:
+      "Everything read-only can do, plus editing Linkies. Cannot delete (admin only). Today's default.",
+    scopes: ["links:write"],
+  },
+  admin: {
+    label: "Admin",
+    description:
+      "Everything above, plus minting and revoking other API keys. Mint rarely; treat like a root credential.",
+    scopes: ["keys:admin"],
+  },
+};
+
+function labelForScopes(scopes: ApiKeyPermission[]): string {
+  if (scopes.includes("keys:admin")) return "Admin";
+  if (scopes.includes("links:write")) return "Read & write";
+  if (scopes.includes("links:read")) return "Read-only";
+  return scopes.join(", ") || "Unknown";
+}
 
 function formatRelative(iso: string): string {
   const date = new Date(iso);
@@ -47,9 +89,10 @@ function formatRelative(iso: string): string {
   return date.toLocaleDateString();
 }
 
-function withLabels(item: CreateApiKeyResponse["apiKey"]): ApiKeyItem {
+function withLabels(item: ApiKeyDto): ApiKeyItem {
   return {
     ...item,
+    scopes: item.scopes ?? ["links:write"],
     createdAtLabel: formatRelative(item.createdAt),
     lastUsedAtLabel: item.lastUsedAt ? formatRelative(item.lastUsedAt) : null,
     revokedAtLabel: item.revokedAt ? formatRelative(item.revokedAt) : null,
@@ -59,6 +102,7 @@ function withLabels(item: CreateApiKeyResponse["apiKey"]): ApiKeyItem {
 export function ApiKeysPanel({ subjectType, initialKeys }: Props) {
   const [keys, setKeys] = useState<ApiKeyItem[]>(initialKeys);
   const [name, setName] = useState("");
+  const [preset, setPreset] = useState<ScopePreset>("write");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [revealedKey, setRevealedKey] = useState<string | null>(null);
@@ -86,7 +130,10 @@ export function ApiKeysPanel({ subjectType, initialKeys }: Props) {
         const response = await fetch("/api/me/keys", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ name }),
+          body: JSON.stringify({
+            name,
+            scopes: SCOPE_PRESETS[preset].scopes,
+          }),
         });
 
         const body = (await response.json().catch(() => ({}))) as
@@ -133,15 +180,7 @@ export function ApiKeysPanel({ subjectType, initialKeys }: Props) {
 
         const body = (await response.json().catch(() => ({}))) as {
           error?: string;
-          apiKey?: {
-            id: number;
-            name: string;
-            scope: "user" | "org";
-            keyPrefix: string;
-            createdAt: string;
-            lastUsedAt: string | null;
-            revokedAt: string | null;
-          };
+          apiKey?: ApiKeyDto;
         };
 
         if (!response.ok || !body.apiKey) {
@@ -193,6 +232,51 @@ export function ApiKeysPanel({ subjectType, initialKeys }: Props) {
           </button>
         </div>
 
+        {/* Sprint 2.7 Chunk D — scope picker. Three presets cover the
+            dominant cases; anything more unusual (e.g. keys:admin + links:
+            read without write) can still go through the API directly.
+            Scope is IMMUTABLE once minted — to change it, revoke + re-issue. */}
+        <fieldset className="space-y-2">
+          <legend className="terminal-label mb-1">Scope</legend>
+          <p className="terminal-muted mb-2 text-xs sm:text-sm">
+            Locked at mint. To change later, revoke this key and issue a new one.
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {(Object.entries(SCOPE_PRESETS) as [ScopePreset, typeof SCOPE_PRESETS[ScopePreset]][]).map(
+              ([value, option]) => {
+                const active = preset === value;
+                return (
+                  <label
+                    key={value}
+                    className={`cursor-pointer border p-3 text-xs sm:text-sm ${
+                      active
+                        ? "border-foreground bg-foreground text-[var(--accent-2)]"
+                        : "border-[var(--panel-border)] bg-white text-foreground hover:border-foreground"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="scope"
+                      value={value}
+                      checked={active}
+                      onChange={() => setPreset(value)}
+                      className="sr-only"
+                    />
+                    <span className="block font-semibold">{option.label}</span>
+                    <span
+                      className={`mt-1 block text-xs leading-relaxed ${
+                        active ? "" : "terminal-muted"
+                      }`}
+                    >
+                      {option.description}
+                    </span>
+                  </label>
+                );
+              },
+            )}
+          </div>
+        </fieldset>
+
         {error ? <p className="text-sm text-red-700">{error}</p> : null}
         {success ? <p className="text-sm text-green-700">{success}</p> : null}
 
@@ -225,9 +309,14 @@ export function ApiKeysPanel({ subjectType, initialKeys }: Props) {
                 className="site-divider-item flex flex-wrap items-start justify-between gap-3"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-foreground sm:text-base">
-                    {item.name}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground sm:text-base">
+                      {item.name}
+                    </p>
+                    <span className="terminal-chip text-xs">
+                      {labelForScopes(item.scopes)}
+                    </span>
+                  </div>
                   <p className="terminal-muted mt-1 break-all text-xs sm:text-sm">
                     {item.keyPrefix}
                   </p>
