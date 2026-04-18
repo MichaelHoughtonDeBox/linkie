@@ -161,6 +161,12 @@ CREATE TABLE IF NOT EXISTS api_keys (
   owner_user_id            TEXT REFERENCES users(clerk_user_id) ON DELETE CASCADE,
   owner_org_id             TEXT REFERENCES organizations(clerk_org_id) ON DELETE CASCADE,
   name                     TEXT NOT NULL,
+  -- Sprint 2.7 Chunk D: granular scopes. Allow-list is validated at mint
+  -- + read time by expandScopes() in src/lib/server/api-keys.ts.
+  -- Entries: 'links:read', 'links:write', 'keys:admin'. Implications
+  -- (write -> read, admin -> write + read) resolve at runtime; the
+  -- stored array is exactly what the caller asked for.
+  scopes                   JSONB NOT NULL DEFAULT '["links:write"]'::jsonb,
   created_by_clerk_user_id TEXT REFERENCES users(clerk_user_id) ON DELETE SET NULL,
   last_used_at             TIMESTAMPTZ,
   revoked_at               TIMESTAMPTZ,
@@ -168,7 +174,8 @@ CREATE TABLE IF NOT EXISTS api_keys (
   CHECK (
     (owner_user_id IS NOT NULL AND owner_org_id IS NULL) OR
     (owner_user_id IS NULL AND owner_org_id IS NOT NULL)
-  )
+  ),
+  CHECK (jsonb_typeof(scopes) = 'array')
 );
 
 CREATE INDEX IF NOT EXISTS idx_api_keys_owner_user
