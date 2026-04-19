@@ -5,6 +5,7 @@ import {
   createApiKeyForSubject,
   listApiKeysForSubject,
   normalizeApiKeyName,
+  parseScopesInput,
   revokeApiKeyForSubject,
   type ApiKeyRecord,
 } from "@/lib/server/api-keys";
@@ -12,6 +13,7 @@ import {
   AuthRequiredError,
   ForbiddenError,
   requireAuthSubject,
+  requireScope,
   roleOfSubject,
 } from "@/lib/server/auth";
 
@@ -28,20 +30,17 @@ function isKnownError(error: unknown): error is KnownError {
   );
 }
 
-// Sprint 2.7 Chunk C: key management is admin-only on org-owned subjects.
-// Applies to browser-session requests. Org-scoped API keys authenticating
-// this route bypass the role gate — they're assumed to be in-policy
-// already, and Chunk D's scope model (`keys:admin`) is the proper gate
-// for bearer-auth automation. User subjects are always admin of
-// themselves so this is a no-op for personal keys.
+// Sprint 2.7 Chunk C: key management is admin-only on org-owned subjects
+// for browser-session callers.
+// Sprint 2.7 Chunk D: bearer-auth callers need the `keys:admin` scope
+// explicitly. `requireScope` no-ops on session subjects (their scopes
+// is undefined) so calling both covers both surfaces without duplicating
+// the role check into the scope layer. User subjects are always admin of
+// themselves so the role check is a no-op for personal keys.
 function requireAdminForKeyManagement(
   subject: Awaited<ReturnType<typeof requireAuthSubject>>,
-  request: NextRequest,
 ): void {
-  const hasBearer = /^Bearer\s+\S+/i.test(
-    request.headers.get("authorization") ?? "",
-  );
-  if (hasBearer) return;
+  requireScope(subject, "keys:admin");
 
   if (subject.type === "org" && roleOfSubject(subject) !== "admin") {
     throw new ForbiddenError(
@@ -70,6 +69,7 @@ function toApiKeyDto(record: ApiKeyRecord) {
     id: record.id,
     name: record.name,
     scope: record.scope,
+    scopes: record.scopes,
     keyPrefix: record.keyPrefix,
     createdAt: record.createdAt,
     lastUsedAt: record.lastUsedAt,
@@ -80,7 +80,7 @@ function toApiKeyDto(record: ApiKeyRecord) {
 export async function GET(request: NextRequest): Promise<Response> {
   try {
     const subject = await requireAuthSubject(request);
-    requireAdminForKeyManagement(subject, request);
+    requireAdminForKeyManagement(subject);
     const apiKeys = await listApiKeysForSubject(subject);
 
     return Response.json({
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const subject = await requireAuthSubject(request);
-    requireAdminForKeyManagement(subject, request);
+    requireAdminForKeyManagement(subject);
     let rawBody: unknown;
 
     try {
@@ -132,9 +132,15 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const name = normalizeApiKeyName(body.name);
+    // Sprint 2.7 Chunk D: optional scopes on the create body. Missing
+    // scopes -> default to ['links:write'] so Sprint 2.6 automation that
+    // POSTs { name } without touching scopes does not regress. Unknown
+    // scope strings reject at this gate.
+    const scopes = parseScopesInput(body.scopes);
     const created = await createApiKeyForSubject({
       subject,
       name,
+      scopes,
       createdByClerkUserId:
         subject.type === "user" ? subject.userId : subject.userId ?? "",
     });
@@ -165,7 +171,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 export async function DELETE(request: NextRequest): Promise<Response> {
   try {
     const subject = await requireAuthSubject(request);
-    requireAdminForKeyManagement(subject, request);
+    requireAdminForKeyManagement(subject);
     const idRaw = request.nextUrl.searchParams.get("id");
     const apiKeyId = idRaw ? Number.parseInt(idRaw, 10) : Number.NaN;
 

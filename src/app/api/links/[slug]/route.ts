@@ -9,6 +9,7 @@ import {
   requireAuthSubject,
   requireCanAdminLinky,
   requireCanEditLinky,
+  requireScope,
   roleOfSubject,
 } from "@/lib/server/auth";
 import {
@@ -90,6 +91,11 @@ export async function PATCH(
 
     const subject = await requireAuthSubject(request);
 
+    // Sprint 2.7 Chunk D: bearer keys need `links:write`. Session subjects
+    // pass trivially (scopes: undefined). Placed before the DB read so a
+    // read-only key burning a key_prefix lookup is cheaper to reject.
+    requireScope(subject, "links:write");
+
     const existing = await getLinkyRecordBySlug(slug);
     if (!existing) {
       return Response.json(
@@ -169,6 +175,13 @@ export async function DELETE(
     const { slug } = await context.params;
 
     const subject = await requireAuthSubject(request);
+
+    // Sprint 2.7 Chunk D: bearer keys need `links:write` to even try a
+    // delete. The admin role check below is the stricter gate; we run
+    // both because `links:write` keys that belong to an editor-role
+    // subject must still 403, and the scope message is the more actionable
+    // error (the caller can mint a higher-scope key).
+    requireScope(subject, "links:write");
 
     const existing = await getLinkyRecordBySlug(slug);
     if (!existing) {

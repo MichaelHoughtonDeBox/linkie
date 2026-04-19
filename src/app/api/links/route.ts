@@ -12,7 +12,12 @@ import type {
   LinkyMetadata,
   LinkyRecord,
 } from "@/lib/linky/types";
-import { getAuthSubject, type AuthSubject } from "@/lib/server/auth";
+import {
+  ForbiddenError,
+  getAuthSubject,
+  requireScope,
+  type AuthSubject,
+} from "@/lib/server/auth";
 import { createClaimToken } from "@/lib/server/claim-tokens";
 import { getPublicBaseUrl, getRateLimitConfig } from "@/lib/server/config";
 import { getLimits } from "@/lib/server/entitlements";
@@ -26,17 +31,23 @@ export const runtime = "nodejs";
 
 const GENERATED_SLUG_ATTEMPTS = 5;
 
-function toErrorResponse(error: LinkyError): Response {
-  const isInternal = error.code === "INTERNAL_ERROR";
+function toErrorResponse(error: LinkyError | ForbiddenError): Response {
+  const isInternal =
+    error instanceof LinkyError && error.code === "INTERNAL_ERROR";
   const publicMessage = isInternal
     ? "Linky is temporarily unavailable. Please try again shortly."
     : error.message;
+
+  const details =
+    error instanceof LinkyError && process.env.NODE_ENV === "development"
+      ? error.details
+      : undefined;
 
   return Response.json(
     {
       error: publicMessage,
       code: error.code,
-      details: process.env.NODE_ENV === "development" ? error.details : undefined,
+      details,
     },
     { status: error.statusCode },
   );
@@ -218,6 +229,16 @@ export async function POST(request: NextRequest): Promise<Response> {
     const payload = parseCreateLinkyPayload(rawPayload);
 
     const subject = await getAuthSubject(request);
+
+    // Sprint 2.7 Chunk D: bearer-auth callers need `links:write`. Anonymous
+    // POSTs (no bearer token — the public create path) skip this check;
+    // `requireScope` on an anonymous subject would throw, so we gate on
+    // subject type first. Session subjects carry `scopes: undefined` and
+    // trivially pass the check.
+    if (subject.type !== "anonymous") {
+      requireScope(subject, "links:write");
+    }
+
     const limits = getLimits(subject);
 
     if (payload.urls.length > limits.maxUrlsPerLinky) {
@@ -270,6 +291,9 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     return Response.json(response, { status: 201 });
   } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return toErrorResponse(error);
+    }
     if (isLinkyError(error)) {
       return toErrorResponse(error);
     }
