@@ -77,11 +77,31 @@ export default function DocsOverviewPage() {
       </section>
 
       <section className="docs-section">
+        <p className="terminal-label">Team it up</p>
+        <p>
+          On org workspaces every Linky is team-owned. Three derived roles
+          — <strong>admin</strong>, <strong>editor</strong>,{" "}
+          <strong>viewer</strong> — gate who can edit, delete, and manage
+          API keys. Owner-side{" "}
+          <Link href="/docs/api#insights">insights</Link> answer whether
+          your audience arrived and which rule they matched, with zero
+          viewer tracking.
+        </p>
+        <ul>
+          <li>
+            <Link href="/docs/access-control">Access control</Link> — the
+            three derived roles, the Clerk mapping, and how to change them.
+          </li>
+        </ul>
+      </section>
+
+      <section className="docs-section">
         <p className="terminal-label">Reference</p>
         <ul>
           <li>
             <Link href="/docs/api">API</Link> — every route, full JSON,
-            error codes.
+            error codes. Includes <code>GET /api/links/:slug/insights</code>
+            {" "}and scoped API keys.
           </li>
           <li>
             <Link href="/docs/cli">CLI</Link> — every flag, with examples.

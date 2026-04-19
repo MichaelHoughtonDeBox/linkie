@@ -251,6 +251,20 @@ linky auth whoami [options]`}</code>
             stored config from <code>linky auth set-key</code>
           </li>
         </ol>
+        <p>
+          Keys carry a scope locked at mint:{" "}
+          <code>links:read</code>, <code>links:write</code> (default), or{" "}
+          <code>keys:admin</code>. The CLI currently ships with default
+          write capability — pick a narrower scope in the dashboard
+          when minting, for example if you&apos;re storing the key in an
+          agent transcript and want the blast radius capped.{" "}
+          <Link
+            href="/docs/access-control"
+            className="underline-offset-4 hover:underline"
+          >
+            See the scope matrix →
+          </Link>
+        </p>
       </section>
 
       <section className="docs-section">
