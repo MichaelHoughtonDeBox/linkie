@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 
+import { HeroTerminal } from "@/components/site/hero-terminal";
 import { LiveLinkyDemo } from "@/components/site/live-linky-demo";
 import { SiteHeader } from "@/components/site/site-header";
 import { WorksWithStrip } from "@/components/site/works-with-strip";
@@ -89,7 +90,16 @@ export default async function Home() {
       <main className="site-shell w-full max-w-6xl p-5 sm:p-6 lg:p-7">
         <SiteHeader currentPath="/" />
 
-        <section className="site-hero">
+        {/*
+          Hero lockup is a two-column grid on lg+ so the copy sits next to
+          the 1:1 HeroTerminal animation (bundled session → short link).
+          Below lg, the terminal stacks under the copy so the H1 + lead
+          still land first on mobile. The `site-hero` class keeps the
+          section's bottom-margin + max-width tokens intact; the inner
+          grid handles the column geometry.
+        */}
+        <section className="site-hero grid grid-cols-1 items-start gap-8 lg:max-w-none lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:gap-12">
+          <div className="site-hero-copy min-w-0">
           {/*
             Kicker now surfaces the three strongest, plain-English anchors
             (OSS, agent-first, MIT) instead of the abstract
@@ -211,6 +221,19 @@ export default async function Home() {
           <p className="terminal-muted mt-3 text-xs sm:text-sm">
             No signup, no credit card. MIT-licensed — self-host anytime.
           </p>
+          </div>
+
+          {/*
+            Hero animation column. `HeroTerminal` owns its own 1:1
+            aspect-ratio box and scanline scrim; the wrapper just pins
+            the max-width so the terminal doesn't stretch to 600px+
+            on very wide viewports and drown the copy. On mobile the
+            grid collapses and this sits under the CTAs — deliberate,
+            because the lead + CTAs are the primary conversion path.
+          */}
+          <div className="site-hero-art mx-auto w-full max-w-sm lg:mx-0 lg:sticky lg:top-8">
+            <HeroTerminal />
+          </div>
         </section>
 
         <LiveLinkyDemo />
