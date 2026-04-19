@@ -233,7 +233,19 @@ export default function DocsSdkPage() {
                   Required for <code>updateLinky()</code>. Bearer token created
                   from the dashboard&apos;s API-keys page. User-scoped keys edit
                   personal launch bundles; org-scoped keys edit team-owned
-                  bundles.
+                  bundles. Keys carry one of three scopes —{" "}
+                  <code>links:read</code>, <code>links:write</code>,{" "}
+                  <code>keys:admin</code> — locked at mint. A{" "}
+                  <code>links:read</code> key cannot call{" "}
+                  <code>updateLinky()</code>; pick <code>links:write</code>{" "}
+                  or higher in the dashboard when minting. See{" "}
+                  <Link
+                    href="/docs/access-control"
+                    className="underline-offset-4 hover:underline"
+                  >
+                    Access control
+                  </Link>
+                  .
                 </td>
               </tr>
               <tr>

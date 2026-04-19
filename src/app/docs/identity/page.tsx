@@ -133,6 +133,19 @@ export default function DocsIdentityPage() {
         </p>
       </section>
 
+      <section className="docs-section">
+        <p className="terminal-label">Viewer identity vs team roles</p>
+        <p>
+          This page is about the viewer opening your Linky. The separate
+          layer — who inside your team can edit, delete, and manage the
+          launch bundle — is covered by{" "}
+          <Link href="/docs/access-control">Access control</Link>. Same
+          Clerk identity feeds both, but the rules are independent: a
+          viewer rule never affects what a teammate can do in the
+          dashboard.
+        </p>
+      </section>
+
       <nav className="docs-next" aria-label="Next steps">
         <span>Next:</span>
         <Link href="/docs/personalize">Personalize</Link>
